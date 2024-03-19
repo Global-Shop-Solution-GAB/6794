@@ -1,0 +1,159 @@
+Program.Sub.ScreenSU.Start
+Gui.frmEstActReview..Create
+Gui.frmEstActReview..Caption("Estimate vs. WO Estimate vs. WO Actual")
+Gui.frmEstActReview..Size(15360,10635)
+Gui.frmEstActReview..MinX(0)
+Gui.frmEstActReview..MinY(0)
+Gui.frmEstActReview..Position(0,0)
+Gui.frmEstActReview..BackColor(-2147483633)
+Gui.frmEstActReview..MousePointer(0)
+Gui.frmEstActReview..Event(UnLoad,frmEstActReview_UnLoad)
+Gui.frmEstActReview.gsgcJobReview.Create(GsGridControl)
+Gui.frmEstActReview.gsgcJobReview.Size(15060,9990)
+Gui.frmEstActReview.gsgcJobReview.Position(45,30)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.Try
+	F.ODBC.Connection!con.opencompanyconnection(90)
+	V.Local.sSQL.Declare
+	F.Data.DataTable.CreateFromSQL("dt","con","select JOB, SUFFIX, SEQ, ROUTER, DESCRIPTION, PART, CONCAT(ROUTER,SEQ) AS 'RouterSEQ', Cast(0 as float) as Router_Estimate, HOURS_ESTIMATED, HOURS_ACTUAL,  DOLLARS_ESTIMATED, DOLLARS_ACTUAL, DATE_COMPLETED from V_JOB_OPERATIONS WHERE LMO='L'",true)
+	f.Data.Dictionary.CreateFromSQL("dRTR","Con","select concat(router,line_router) as 'RouterSeq', run_time as 'Router_Estimate' from V_ROUTER_LINE where lmo='L'")
+	f.Data.Dictionary.SetDefaultReturn("dRTR","0")
+	F.Data.Datatable.FillFromDictionary("dt","dRTR","RouterSeq","Router_Estimate")
+	f.Data.DataTable.AddExpressionColumn("dt","RouterVariance","Float","Router_Estimate - HOURS_ACTUAL")
+	f.Data.DataTable.AddExpressionColumn("dt","WorkOrderVariance","Float","HOURS_ESTIMATED - HOURS_ACTUAL")
+		
+	gui.frmEstActReview.gsgcJobReview.anchor(15)
+	gui.frmEstActReview.gsgcJobReview.DataSource("dt")
+	f.Intrinsic.Control.CallSub(setProperties)
+	
+	gui.frmEstActReview..Show
+F.Intrinsic.Control.Catch
+	f.Intrinsic.UI.Msgbox(v.Ambient.ErrorDescription)
+	f.ODBC.Connection!con.Close
+	f.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.setProperties.Start
+f.Intrinsic.Control.Try
+	gui.frmEstActReview.gsgcJobReview.AddGridviewFromDatatable("gv","dt")
+	
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "JOB", "HeaderFontBold", True)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "JOB", "AllowEdit", False)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "JOB","HeaderHAlignment","Center")
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "JOB","ReadOnly", True)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "JOB","Caption","Work Order #")
+	
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "SUFFIX", "HeaderFontBold", True)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "SUFFIX", "AllowEdit", False)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "SUFFIX","HeaderHAlignment","Center")
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "SUFFIX","ReadOnly", True)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "SUFFIX","Caption","Suffix")
+	
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "SEQ", "HeaderFontBold", True)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "SEQ", "AllowEdit", False)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "SEQ","HeaderHAlignment","Center")
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "SEQ","ReadOnly", True)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "SEQ","Caption","Sequence")
+	
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "DESCRIPTION", "HeaderFontBold", True)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "DESCRIPTION", "AllowEdit", False)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "DESCRIPTION","HeaderHAlignment","Center")
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "DESCRIPTION","ReadOnly", True)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "DESCRIPTION","Caption","Description")
+	
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "PART", "HeaderFontBold", True)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "PART", "AllowEdit", False)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "PART","HeaderHAlignment","Center")
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "PART","ReadOnly", True)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "PART","Caption","Part")
+	
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "ROUTER", "HeaderFontBold", True)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "ROUTER", "AllowEdit", False)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "ROUTER","HeaderHAlignment","Center")
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "ROUTER","ReadOnly", True)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "ROUTER","Caption","Router")
+	
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "Router_Estimate", "HeaderFontBold", True)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "Router_Estimate", "AllowEdit", False)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "Router_Estimate","HeaderHAlignment","Center")
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "Router_Estimate","ReadOnly", True)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "Router_Estimate","Caption","Router Estimate (HRS)")
+	Gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "Router_Estimate","DisplayCustomNumeric","#,###,###,##0.00")
+	
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "HOURS_ESTIMATED", "HeaderFontBold", True)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "HOURS_ESTIMATED", "AllowEdit", False)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "HOURS_ESTIMATED","HeaderHAlignment","Center")
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "HOURS_ESTIMATED","ReadOnly", True)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "HOURS_ESTIMATED","Caption","WO Estimate (HRS)")
+	Gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "HOURS_ESTIMATED","DisplayCustomNumeric","#,###,###,##0.00")
+	
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "HOURS_ACTUAL", "HeaderFontBold", True)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "HOURS_ACTUAL", "AllowEdit", False)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "HOURS_ACTUAL","HeaderHAlignment","Center")
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "HOURS_ACTUAL","ReadOnly", True)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "HOURS_ACTUAL","Caption","Actual Hours (HRS)")
+	Gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "HOURS_ACTUAL","DisplayCustomNumeric","#,###,###,##0.00")
+	
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "RouterVariance", "HeaderFontBold", True)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "RouterVariance", "AllowEdit", False)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "RouterVariance","HeaderHAlignment","Center")
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "RouterVariance","ReadOnly", True)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "RouterVariance","Caption","Router Variance (HRS)")
+	Gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "RouterVariance","DisplayCustomNumeric","#,###,###,##0.00")
+	
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "WorkOrderVariance", "HeaderFontBold", True)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "WorkOrderVariance", "AllowEdit", False)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "WorkOrderVariance","HeaderHAlignment","Center")
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "WorkOrderVariance","ReadOnly", True)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "WorkOrderVariance","Caption","WO Variance (HRS)")
+	Gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "WorkOrderVariance","DisplayCustomNumeric","#,###,###,##0.00")
+	
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "DOLLARS_ESTIMATED", "HeaderFontBold", True)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "DOLLARS_ESTIMATED", "AllowEdit", False)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "DOLLARS_ESTIMATED","HeaderHAlignment","Center")
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "DOLLARS_ESTIMATED","ReadOnly", True)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "DOLLARS_ESTIMATED","Caption","Dollars Est.")
+	Gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "DOLLARS_ESTIMATED","DisplayCustomNumeric","$#,###,###,##0.00")
+	
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "DOLLARS_ACTUAL", "HeaderFontBold", True)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "DOLLARS_ACTUAL", "AllowEdit", False)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "DOLLARS_ACTUAL","HeaderHAlignment","Center")
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "DOLLARS_ACTUAL","ReadOnly", True)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "DOLLARS_ACTUAL","Caption","Dollars Act.")
+	Gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "DOLLARS_ACTUAL","DisplayCustomNumeric","$#,###,###,##0.00")
+	
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "DATE_COMPLETED", "HeaderFontBold", True)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "DATE_COMPLETED", "AllowEdit", False)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "DATE_COMPLETED","HeaderHAlignment","Center")
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "DATE_COMPLETED","ReadOnly", True)
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "DATE_COMPLETED","Caption","Complete Date")
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "DATE_COMPLETED","DisplayCustomDatetime","d")
+	
+	gui.frmEstActReview.gsgcJobReview.SetColumnProperty("gv", "RouterSeq","Visible","false")
+	
+	Gui.frmEstActReview.gsgcJobReview.AddSummaryItem("gv", "HOURS_ACTUAL","SUM_HOURS_ACTUAL","Sum","","","n")
+	Gui.frmEstActReview.gsgcJobReview.AddSummaryItem("gv", "HOURS_ESTIMATED","SUM_HOURS_ESTIMATE","Sum","","","n")
+	Gui.frmEstActReview.gsgcJobReview.AddSummaryItem("gv", "Router_Estimate","SUM_Router_Estimate","Sum","","","n")
+	Gui.frmEstActReview.gsgcJobReview.AddSummaryItem("gv", "DOLLARS_ESTIMATED","SUM_DOLLARS_ESTIMATED","Sum","","","n")
+	Gui.frmEstActReview.gsgcJobReview.AddSummaryItem("gv", "DOLLARS_ACTUAL","SUM_DOLLARS_ACTUAL","Sum","","","n")
+	Gui.frmEstActReview.gsgcJobReview.AddSummaryItem("gv", "RouterVariance","SUM_RouterVariance","Sum","","","n")
+	Gui.frmEstActReview.gsgcJobReview.AddSummaryItem("gv", "WorkOrderVariance","SUM_WorkOrderVariance","Sum","","","n")
+f.Intrinsic.Control.Catch
+	f.Intrinsic.UI.Msgbox(v.Ambient.ErrorDescription)
+	f.ODBC.Connection!con.Close
+	f.Intrinsic.Control.End
+f.Intrinsic.Control.EndTry
+Program.Sub.setProperties.End
+
+Program.Sub.frmEstActReview_UnLoad.Start
+f.ODBC.Connection!con.Close
+f.Intrinsic.Control.End
+Program.Sub.frmEstActReview_UnLoad.End
+
+
